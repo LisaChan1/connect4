@@ -1,0 +1,49 @@
+import java.util.*;
+
+public class Node {
+   final int ROWS = 6;
+   final int COL = 7;
+   private List<Node> children = null;
+   private String[][] val = new String[ROWS][COL];
+   
+   public Node(String[][] value){
+      this.children = new ArrayList<>();
+      this.val = value;
+   }
+   
+   public void addChild(Node child){
+      children.add(child);
+   }
+   
+   public List<Node> getChildren(){
+      return children;
+   }
+   public String[][] getVal(){
+      return val;
+   }
+   
+   public void printVal(String[][] board1){
+      String str = "";
+      for (int i = (ROWS - 1); i >= 0; i--) {
+         str += "|";
+         
+         for (int j = 0; j < COL; j++){
+            str += board1[i][j];
+         }
+         str += "|\n";
+      }
+      for (int i = 0; i < COL; i++) {
+         str += "---";
+      }
+      str += "\n";
+      
+      for (int i = 0; i < COL; i++) {
+         str = str + " " + (i + 1) + " ";
+      }
+      str += "\n";
+   
+      System.out.print(str);
+   
+   }
+   
+}
