@@ -1,0 +1,642 @@
+import java.util.*;
+import java.io.*;
+import java.lang.*;
+
+public class Connect_Four
+{ 
+   public static void main(String[] args)
+   {
+      //creating variables, constants, scanner, and arrays
+      String fileName = "";
+      Scanner reader = new Scanner(System.in);
+      String response = "";
+      final String NEW = "new";
+      final String RETURNING = "returning";
+      int wins = -1;
+      int losses = -1;
+      int ties = -1;
+      boolean invalidInput = true;
+      int playerTurn = -1;;
+      int rowCount = 0;
+      boolean endPlayerTurn = false;
+      int lastPlayerColumn = -1;
+      int lastPlayerRow = -1; //necessary??
+      String playAgain;
+      boolean validInput;
+      boolean nextRound;
+      double total;
+      double winPercent;
+      double lossPercent;
+      double tiePercent;
+      final int ROWS = 6;
+      final int COLUMNS = 7;
+      String[][] board = new String[ROWS][COLUMNS];
+      final String EMPTY_SLOT = "   ";
+      final String PLAYER_CHIP = " O ";
+      final String AI_CHIP = " X ";
+      boolean[][] emptySlots = new boolean[ROWS][COLUMNS];
+      int[] fourInRow = new int[4];
+      int[] fourInRowCol = new int[4];
+      int counter = 5;
+      boolean endAITurn = false;
+      int playerChips = 0;
+      int aiChips = 0;
+      boolean endGame;
+      boolean endGame1;
+      boolean endGame2 = false;
+      String winner = "";
+      boolean tieGame = false;
+      int emptyCounter = 0;
+      boolean newGame = false;
+      boolean validAns;
+      int fullCount = 0;
+      boolean validTurn;
+      int randNum;
+      
+      //file system
+      while(invalidInput) //validating input
+      {
+         try
+         {
+            //asking user if they are a new or returning player
+            System.out.print("are you a new or returning player? ");
+            response = reader.nextLine();
+         
+            if (response.equals(NEW))//creating a new file from player's name
+            {
+               System.out.print("enter your name: ");
+               fileName = reader.nextLine();
+               invalidInput = false;
+            }
+            else if (response.equals(RETURNING)) //finding existing file from player's name
+            {
+               System.out.print("enter your name: ");
+               fileName = reader.nextLine();
+               invalidInput = false;
+            }
+            
+            fileName += ".txt";
+         }
+         catch(InputMismatchException e)
+         {
+            System.out.println("invalid input");
+            invalidInput = true;
+         }
+      }
+      
+      try
+      { 
+         if (response.equals(NEW)) //writing wins, losses, and ties if they player is new
+         {
+            FileWriter out = new FileWriter(fileName, false); //creating file writter
+            
+            //setting values for wins, losses, and ties
+            wins = 0;
+            losses = 0;
+            ties = 0;
+            
+            //writing valuess on separate file
+            out.write(wins + "\n");
+            out.write(losses + "\n");
+            out.write(ties + "\n");
+            
+            out.close();
+         }
+         else if (response.equals(RETURNING))//reading wins, losses, and ties if the player is returning
+         { 
+            BufferedReader in = new BufferedReader(new FileReader(fileName)); //creating buffered reader
+            
+            //reading win, loss, and tie values from separate document
+            wins = Integer.parseInt(in.readLine());
+            losses = Integer.parseInt(in.readLine());
+            ties = Integer.parseInt(in.readLine());
+            
+            in.close();
+         }
+         
+         total = wins + losses + ties; //finding the total number of games
+         
+         //outputting wins, losses, ties, and their percentages
+         System.out.println("you have " + wins + " wins, " + losses + " losses, and " + ties + " ties");
+         System.out.println("you have won " + (wins / total * 100) + "%, lost " + (losses / total * 100) + "%, and tied " + (ties / total * 100) + "% of the time");
+      }
+      catch (IOException e)
+      {
+         System.out.println(e + " problem reading/writing " + fileName);
+      }
+      catch (ArithmeticException e) //when the player is new (the total is 0)
+      {
+         System.out.println("you have won " + 0 + "%, lost " + 0 + "%, and tied " + 0 + "% of the time");
+      }
+      
+      
+      do //for the option to play again
+      {
+         //setting up board (giving it default values)
+         for (int i = 0; i < ROWS; i++)
+         {
+            for (int j = 0; j < COLUMNS; j++)
+            {
+               board[i][j] = EMPTY_SLOT;
+            }
+         }
+      //setting up array that keeps track of the empty slots
+         for (int i = 0; i < ROWS; i++)
+         {
+            for (int j = 0; j < COLUMNS; j++)
+            {
+               emptySlots[i][j] = true;
+            }
+         }
+      
+      //printing board
+         printBoard(ROWS, COLUMNS, board);
+
+         do
+         {   
+            invalidInput = true;
+            while(invalidInput)//player's turn
+            {
+               try
+               {
+               //prompting user to pick a column to put chip in
+                  System.out.print("enter the column number where you want to put the chip: ");
+                  playerTurn = reader.nextInt();
+               
+               //checking if the inputted value is valid
+                  if (playerTurn < 8 && playerTurn > 0)
+                  {
+                     invalidInput = false;
+                  }
+                  else
+                  {
+                     invalidInput = true;
+                  }
+               }
+               catch(InputMismatchException e)
+               {
+                  System.out.println("invalid input");
+                  invalidInput = true;
+               }
+            }
+         
+            playerTurn -= 1;
+            lastPlayerColumn = playerTurn; //keeping track of the last column player moved
+            endPlayerTurn = false;
+         
+         //figuring out which row the chip will be
+            counter = 5;
+            while(endPlayerTurn == false)
+            {
+               try
+               {
+               //checking if the slot is empty
+               if (emptySlots[counter][playerTurn])
+               {
+                  board[counter][playerTurn] = PLAYER_CHIP;
+                  emptySlots[counter][playerTurn] = false;
+                  endPlayerTurn = true;
+                  lastPlayerRow = counter;
+               }
+               else
+               {
+                  counter -= 1;
+                  endPlayerTurn = false;
+               }
+               }
+               catch(ArrayIndexOutOfBoundsException e)
+               {
+                  
+               }
+            }
+            playerChips += 1;
+         
+         //printing the updated board
+            printBoard(ROWS, COLUMNS, board);
+         
+         //checking if the game is over
+            endGame1 = checkGameOver(PLAYER_CHIP, ROWS, COLUMNS, board, playerChips, emptySlots);
+         
+            if (endGame1 == false)
+            {
+            
+            //randomly moving AI
+               
+                  randNum = (int)(Math.random() * 7); //generating a random number
+                  counter = 5;
+                  endAITurn = false;
+               
+                  System.out.println(randNum);
+            
+            //determining which row the chip will be in
+               while(endAITurn == false)
+               {
+                  if (emptySlots[counter][randNum]) //checking if slot if empty
+                  {
+                     board[counter][randNum] = AI_CHIP;
+                     emptySlots[counter][randNum] = false;
+                     endAITurn = true;
+                  }
+                  else
+                  {
+                     counter -= 1;
+                     endAITurn = false;
+                  }
+               }
+               aiChips += 1;
+            
+            //printing out updated board
+               printBoard(ROWS, COLUMNS, board);
+            
+            //checking if the game has ended
+               endGame2 = checkGameOver(PLAYER_CHIP, ROWS, COLUMNS, board, aiChips, emptySlots);
+               
+               //determining the end result of the game if the game has ended
+               if (endGame2)
+               {
+                  if (checkTie(ROWS, COLUMNS, emptySlots) == false)
+                  {
+                     winner = "AI";
+                  }
+                  else
+                  {
+                     tieGame = true;
+                  }
+               }
+            }
+            else
+            {
+               //determining whether or not it was a tie
+               if (checkTie(ROWS, COLUMNS, emptySlots) == false)
+               {
+                  winner = "player";
+               }
+               else
+               {
+                  tieGame = true;
+               }
+            }
+            
+            //determining if the game ended during either the player's or the AI's turn
+            if (endGame1 == true || endGame2 == true)
+            {
+               endGame = true;
+            }
+            else
+            {
+               endGame = false;
+            }
+            
+         }while(endGame == false);
+      
+         System.out.println("game over");
+      
+         if (winner.equals("player"))
+         {
+            wins += 1;
+            System.out.println("player wins!");
+         }
+         else if (winner.equals("AI"))
+         {
+            losses += 1;
+            System.out.println("AI wins!");
+         }
+         else
+         {
+            if (tieGame)
+            {
+               ties += 1;
+               System.out.println("it's a tie!");
+            }
+         }
+         
+         total = wins + losses + ties; //finding the new total number of games
+         
+      //outputting new wins, losses, ties, and their percentages
+         System.out.println("you have " + wins + " wins, " + losses + " losses, and " + ties + " ties");
+         System.out.println("you have won " + (wins / total * 100) + "%, lost " + (losses / total * 100) + "%, and tied " + (ties / total * 100) + "% of the time");
+      
+         try
+         {
+            FileWriter out = new FileWriter(fileName, false); //creating file writer
+            
+            //outputting the new stats to the file
+            out.write(wins + "\n");
+            out.write(losses + "\n");
+            out.write(ties + "\n");
+            
+            out.close();
+         
+         }
+         catch(IOException e)
+         {
+            System.out.println(e + "problem writing to " + fileName);
+         }
+         
+         //prompting user about whether or not they would like to play again
+         System.out.print("would you like to play again?");
+         
+         do
+         {
+            playAgain = reader.nextLine();
+            
+            //determining whether input was valid and whether or not there will be a next round
+            if (playAgain.equals("yes"))
+            {
+               newGame = true;
+               validAns = true;
+            }
+            else if (playAgain.equals("no"))
+            {
+               newGame = false;
+               validAns = true;
+            }
+            else
+            {
+               validAns = false;
+               System.out.println("invalid input");
+               System.out.println("would you like to play again?");
+            }
+         }while (validAns == false);
+      
+      }while(newGame);
+      
+      //outputting goodbye message
+      System.out.println("goodbye");
+   }
+   
+   /*
+   name: void printBoard
+   int rows - this parameter is the number of rows in the board
+   int columns - this parameter is the number of columns in the board
+   String[][] board1 - this parameter contains all the chips played before by both the player and the AI
+   this method takes the rows, column, and the board and prints out the board on the screen
+   */
+   
+   public static void printBoard(int rows, int columns, String[][] board1)
+   {
+      //printing the board
+      for (int i = 0; i < rows; i++)
+      {
+         System.out.print("|");
+         for (int j = 0; j < columns; j++)
+         {
+            System.out.print(board1[i][j]);
+         }
+         System.out.println("|");
+      }
+      
+      System.out.println("-----------------------");
+      System.out.print(" ");
+      
+      //printing column numbers
+      for (int i = 0; i < columns; i++)
+      {
+         System.out.print(" " + (i + 1) + " ");
+      }
+      System.out.println(" ");
+   }
+   
+   /*
+   name: boolean checkGameOver
+   String chip - this parameter is the chip I'm comparing against the ones in the board
+   int rows - this parameter is the number of rows of the board
+   int columns - this parameter is the number of columns in the board
+   String[][] board1 - this parameter contains the current board and the chips inside
+   int numChips - this parameter keeps tracko f how many chips have been played so far (by the AI/player)
+   boolean[][] emptySlots1 - this parameter keeps track of which slots are empty
+   this method takes chip, rows, columns, board, numchips, and emptySlots1 and checks to see if there are 4 of the same chips in a row
+   */
+   
+   public static boolean checkGameOver(String chip, int rows, int columns, String[][] board1, int numChips, boolean[][] emptySlots1)
+   {
+      //creating variables
+      int inARow = 0;
+      boolean gameOver = false;
+      int loopCount = 0;
+      boolean exit = false;
+      
+      if (numChips < 4)//checking if there are even enough chips to have a connect 4
+      { 
+         gameOver = false;
+      }
+      else{
+         
+         if (checkTie(rows, columns, emptySlots1)) //checking if all the slots are filled
+         {
+            gameOver = true;
+            System.out.println("tie");
+         }
+         else
+         {
+         //checking for horizontal 4 in a rows
+            for (int i = 0; i < rows; i++)
+            {
+               for (int j = 0; j < columns; j++)
+               {
+                  if (board1[i][j] == chip) //determining if the slot is filled with the chip
+                  {
+                     inARow += 1;
+                  }
+                  else
+                  {
+                     inARow = 0; //resetting the count if it isn't
+                  }
+                  
+                  if (inARow >= 4) //if the count was at least 4, it exits the loop
+                  {
+                     break;
+                  }
+               }
+               
+               if (inARow >= 4) //if the count was at least 4, it exits the loop
+               {
+                  break;
+               }
+               else
+               {
+                  inARow = 0; //resetting the count if it isn't
+               }
+            }
+            
+            if (inARow >= 4)//ending the game if there si a four in a row
+            {
+               gameOver = true;
+               
+            }
+            else 
+            {
+               inARow = 0;
+                  //checking for vertical four in a rows
+               for (int i = 0; i < columns; i++)
+               {
+                  for (int j = 0; j < rows; j++)
+                  {
+                     if (board1[j][i] == chip) //checking if chip in slot is the one we're looking for
+                     {
+                        inARow += 1;
+                     }
+                     else
+                     {
+                        inARow = 0;
+                     }
+                    
+                     if (inARow >= 4)//if the count was at least 4, it exits the loop
+                     {
+                        break;
+                     }
+                  }
+                  
+                  if (inARow >= 4)//if the count was at least 4, it exits the loop
+                  {
+                     break;
+                  }
+                  else
+                  {
+                     inARow = 0;
+                  }
+               }
+               
+               if (inARow >= 4)//ending the game if there's a 4 in a row
+               {
+                  gameOver = true;
+               }
+               else
+               { //checking diagonals 
+                  inARow = 0;
+                  
+                  //checking from top left to bottom right direction
+                  for (int i = 0; i < columns; i++)
+                  {
+                     for (int j = 0; j < columns; j++)
+                     {
+                        try
+                        {
+                           if (board1[i + j][i + j] == chip) //checking if the chip in the slot matched the one we're looking for
+                           {
+                              inARow += 1;
+                           }
+                           else
+                           {
+                              inARow = 0;
+                           }
+                        }
+                        catch(ArrayIndexOutOfBoundsException e)
+                        {
+                           if (inARow < 4) //resetting the count if it's less than 4
+                           {
+                              inARow = 0;
+                           }
+                        }
+                        
+                        if (inARow >= 4) //if the count was at least 4, it exits the loop
+                        {
+                           break;
+                        }
+                     }
+                     
+                     if (inARow >= 4)//if the count was at least 4, it exits the loop
+                     {
+                        break;
+                     }
+                  }    
+                  
+                  if (inARow >= 4) //ending the game if ther's a four in a row
+                  {
+                     gameOver = true; 
+                  }
+                  else
+                  {
+                     //checking diagonals from bottom left to top right
+                     inARow = 0;
+                     for (int i = columns - 1; i >= 0; i--)
+                     {
+                        for (int j = 0; j < columns; j++)
+                        {
+                           try
+                           {
+                              if (board1[0 + j][i - j] == chip) //checking if the chip in the slot matches the one we're looking for
+                              {
+                                 inARow += 1;
+                              }
+                              else
+                              {
+                                 inARow = 0;
+                              }
+                           }
+                           catch(ArrayIndexOutOfBoundsException e)
+                           {
+                              if (inARow < 4)//resetting the count if it's less than 4
+                              {
+                                 inARow = 0;
+                              }
+                           }
+                           
+                           if (inARow >= 4)//if the count was at least 4, it exits the loop
+                           {
+                              break;
+                           }
+                        }
+                        
+                        if (inARow >= 4) //if the count was at least 4, it exits the loop
+                        {
+                           break;
+                        }
+                     }
+                     
+                     if (inARow >= 4) //ending the game if there's a 4 in a row
+                     {
+                        gameOver = true;
+                        
+                     }
+                     else 
+                     {
+                        gameOver = false; //continuing the game if there are no horizontal, vertical, or diagonal 4 in a rows
+                     }
+                  }
+               }
+            }
+         }
+      }
+      return gameOver; 
+   }
+   
+   /*
+   name: boolean checkTie
+   int rows - this parameter is the number of rows in the board
+   int columns - this parameter is the number of columns in the board
+   boolean[][] emptySlots1 - this parameter keeps trac of which slots are still empty
+   this method takes the rows, column, and the emptySlots1 and checks to see if the board is full (and therefore a tie)
+   */
+
+   public static boolean checkTie(int rows, int columns, boolean[][] emptySlots1)
+   {
+      //creating variables
+      boolean tie;
+      int empty = 0;
+      int counter;
+      int randNum;
+      
+      //checking if there are any remaining empty slots
+      for (int i = 0; i < rows; i++)
+      {
+         for (int j = 0; j < columns; j++)
+         {
+            if (emptySlots1[i][i] == true)
+            {
+               empty += 1;
+            }
+         }
+      }
+      
+      if (empty == 0) //if there are no empty slots, then it declares a tie
+      {
+         tie = true;
+      }
+      else
+      {
+         tie = false;
+      }
+      return tie;
+   } 
+}
