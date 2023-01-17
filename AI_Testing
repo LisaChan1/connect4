@@ -1,0 +1,73 @@
+import java.util.ArrayList;
+
+public class connect4AITest{
+   public static void main (String[] args){
+      final int ROWS = 6;
+      final int COL = 7;
+      String[][] board = new String[ROWS][COL];
+      String[][] tempBoard = new String[ROWS][COL];
+      final String PLAYERSLOT = " X ";
+      final String EMPTYSLOT = "   ";
+      final String AISLOT = " O ";
+      boolean valid;
+      ArrayList<Node> nextMoves = new ArrayList<Node>();      
+      int row;
+      
+      for (int i = 0; i < ROWS; i++) {
+         for (int j = 0; j < COL; j++){
+            board[i][j] = EMPTYSLOT;
+         }
+      }
+      
+      board[0][3] = PLAYERSLOT;
+   
+      
+      // Node root = new Node("root");
+   //       Node child1 = new Node("child1");
+   //       Node child2 = new Node("child2");
+   //       Node grandchild3 = new Node("grandchild3");
+   //       child1.addChild(new Node("grandchild1"));
+   //       child1.addChild(new Node("grandchild2"));
+   //       child2.addChild(grandchild3);
+   //       root.addChild(child1);
+   //       root.addChild(child2);
+   //       
+   //       TreePrint.print(root);
+   //       System.out.println("end");
+   //       TreePrint.print(grandchild3);
+      
+      Node move1 = new Node(board);
+      TreePrint.print(move1);
+      
+      for (int i = 0; i < COL; i++) {
+         tempBoard = board;
+         valid = checkValidMove(ROWS, COL, EMPTYSLOT, AISLOT, i, board);
+         
+         if (valid) {
+            tempBoard[row][i] = AISLOT; //figure out how to get value for row
+            nextMoves.add(new Node(tempBoard));
+         }
+         
+      }
+      
+      }
+         public static boolean checkValidMove(int rows, int cols, String empty, String chip, int move1, String[][] board2) {
+      boolean validMove = false;
+      
+      for (int i = 0; i < rows; i++){
+         if (validMove == false) {
+            if (board2[i][move1].equals(empty)){
+               row = i;
+               validMove = true;
+            }
+         } 
+      }
+         
+      return validMove;
+   
+   }
+      
+   }
+   
+
+
